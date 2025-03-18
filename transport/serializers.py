@@ -1,4 +1,4 @@
-from models import ELDLog, Location,Trip
+from .models import ELDLog, Location,Trip
 from rest_framework import serializers, viewsets
 
 # ------------------------- Serializers -------------------------
