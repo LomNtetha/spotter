@@ -5,8 +5,8 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from transport.models import Location, ELDLog, Trip
-from .serializers import LocationSerializer, ELDLogSerializer, TripSerializer
+from transport.models import Driver, Location, ELDLog, Trip, Vehicle
+from .serializers import DriverSerializer, LocationSerializer, ELDLogSerializer, TripSerializer, VehicleSerializer
 import googlemaps
 
 # Load environment variables
@@ -17,6 +17,14 @@ google_maps_api_key = os.getenv('GOOGLE_MAPS_API_KEY')
 if not google_maps_api_key:
     raise ValueError("Google Maps API key is missing. Please check your .env file.")
 gmaps = googlemaps.Client(key=google_maps_api_key)
+
+class DriverViewSet(viewsets.ModelViewSet):
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+
+class VehicleViewSet(viewsets.ModelViewSet):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
 
 # ViewSets
 class LocationViewSet(viewsets.ModelViewSet):
@@ -77,13 +85,34 @@ def get_eld_logs(request):
 
 @api_view(['POST'])
 def create_trip(request):
-    required_fields = ['current_location', 'pickup_location', 'dropoff_location', 'cycle_hours_used']
-    for field in required_fields:
-        if field not in request.data:
-            return Response({"error": f"'{field}' is required."}, status=400)
+    # Get data from the request
+    driver_id = request.data.get('driver_id')
+    vehicle_id = request.data.get('vehicle_id')
+    trip_hours = request.data.get('trip_hours')
+    trip_distance = request.data.get('trip_distance')
+    pickup_dropoff_hours = 1  # Additional hour for pickup and drop-off
 
-    serializer = TripSerializer(data=request.data)
-    if serializer.is_valid():
-        trip = serializer.save()
-        return Response({"message": "Trip created", "trip_id": trip.id})
-    return Response(serializer.errors, status=400)
+    # Fetch driver and vehicle
+    driver = Driver.objects.get(id=driver_id)
+    vehicle = Vehicle.objects.get(id=vehicle_id)
+
+    # Check driver hours
+    total_hours = trip_hours + pickup_dropoff_hours
+    if not driver.can_drive(total_hours):
+        return Response({"error": "Driver cannot work additional hours. A break is required."}, status=400)
+
+    # Check vehicle fueling
+    if vehicle.needs_fueling(trip_distance):
+        return Response({"error": "Vehicle needs fueling before this trip."}, status=400)
+
+    # Create the trip
+    trip = Trip.objects.create(...)
+
+    # Update driver and vehicle
+    driver.hours_worked += total_hours
+    driver.save()
+
+    vehicle.distance_since_fueling += trip_distance
+    vehicle.save()
+
+    return Response({"message": "Trip created", "trip_id": trip.id})
