@@ -3,11 +3,11 @@ from dotenv import load_dotenv
 import datetime
 from django.shortcuts import render
 from rest_framework import serializers, viewsets
-from models import Location, Road,ELDLog, Trip
-from serializers import LocationSerializer,RoadSerializer,ELDLogSerializer, TripSerializer
+from transport.models import Location, ELDLog, Trip
+from . serializers import LocationSerializer,ELDLogSerializer, TripSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from services.services import dijkstra
+# from .services.services import dijkstra
 from django.shortcuts import get_object_or_404
 import googlemaps
 
