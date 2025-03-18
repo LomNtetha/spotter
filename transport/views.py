@@ -1,13 +1,22 @@
+import os
+from dotenv import load_dotenv
+import datetime
 from django.shortcuts import render
 from rest_framework import serializers, viewsets
-from models import Location, Road,ELDLog
-from serializers import LocationSerializer,RoadSerializer,ELDLogSerializer
+from models import Location, Road,ELDLog, Trip
+from serializers import LocationSerializer,RoadSerializer,ELDLogSerializer, TripSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from services.services import dijkstra
+from django.shortcuts import get_object_or_404
+import googlemaps
 
 
-# ------------------------- Views -------------------------
+load_dotenv()
+
+# Initialize Google Maps Client using the API key from .env
+gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
+
 class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
