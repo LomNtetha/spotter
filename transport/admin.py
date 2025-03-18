@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import Location, ELDLog, Trip
+from .models import Driver, Location, ELDLog, Trip, Vehicle
+
+@admin.register(Driver)
+class DriverAdmin(admin.ModelAdmin):
+    list_display = ('name', 'hours_worked', 'last_break')  # Fields to display in the admin list view
+    search_fields = ('name',)  # Add a search bar for the name field
+    list_filter = ('hours_worked',)  # Add filters for the hours_worked field
+
+@admin.register(Vehicle)
+class VehicleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'distance_since_fueling')  # Fields to display in the admin list view
+    search_fields = ('name',)  # Add a search bar for the name field
+    list_filter = ('distance_since_fueling',)  # Add filters for the distance_since_fueling field
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
