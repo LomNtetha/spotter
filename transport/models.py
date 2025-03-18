@@ -1,6 +1,47 @@
+from datetime import timezone
 from django.db import models
 
 # ------------------------- Models -------------------------
+
+class Driver(models.Model):
+    name = models.CharField(max_length=100)
+    hours_worked = models.FloatField(default=0)  # Total hours worked in the current cycle
+    last_break = models.DateTimeField(null=True, blank=True)  # Timestamp of the last break
+
+    def can_drive(self, additional_hours):
+        """
+        Check if the driver can work additional hours without violating HOS rules.
+        """
+        if self.hours_worked + additional_hours > 70:
+            return False
+        return True
+
+    def take_break(self):
+        """
+        Reset the driver's hours after a 34-hour break.
+        """
+        self.hours_worked = 0
+        self.last_break = timezone.now()
+        self.save()
+
+class Vehicle(models.Model):
+    name = models.CharField(max_length=100)
+    distance_since_fueling = models.FloatField(default=0)  # Miles since last fueling
+
+    def needs_fueling(self, additional_distance):
+        """
+        Check if the vehicle needs fueling after traveling additional_distance miles.
+        """
+        if self.distance_since_fueling + additional_distance > 1000:
+            return True
+        return False
+
+    def refuel(self):
+        """
+        Reset the distance after fueling.
+        """
+        self.distance_since_fueling = 0
+        self.save()
 class Location(models.Model):
     """
     Represents a geographical location with a name, latitude, and longitude.
