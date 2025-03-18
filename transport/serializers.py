@@ -1,4 +1,4 @@
-from .models import ELDLog, Location,Trip
+from .models import Driver, ELDLog, Location,Trip, Vehicle
 from rest_framework import serializers, viewsets
 
 # ------------------------- Serializers -------------------------
@@ -17,3 +17,12 @@ class TripSerializer(serializers.ModelSerializer):
         model = Trip
         fields = '__all__'
 
+class DriverSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Driver
+        fields = '__all__'  # Serialize all fields
+
+class VehicleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehicle
+        fields = '__all__'  # Serialize all fields
